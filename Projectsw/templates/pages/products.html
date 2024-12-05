@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+
+{% block title %}Products | Coffee Shop{% endblock %}
+
+{% block content %}
+<section class="products" id="products">
+  <div class="heading">
+    <h2>Our Popular Products</h2>
+  </div>
+  <div class="products-container">
+    {% for product in products %}
+    <div class="box">
+      <img src="{% static product.image %}" alt="{{ product.name }}">
+      <h3>{{ product.name }}</h3>
+      <div class="content">
+        <span>${{ product.price }}</span>
+        <a href="#">Add to cart</a>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+</section>
+{% endblock %}
