@@ -1,35 +1,42 @@
-name: Django Tests
+from django.test import TestCase
+from django.urls import reverse
 
-on:
-  push:
-    branches:
-      - main
-  pull_request:
-    branches:
-      - main
+class AuthenticationTests(TestCase):
 
-jobs:
-  test:
-    runs-on: ubuntu-latest
+    def setUp(self):
+        # Set up initial user data
+        self.signup_url = reverse('signup')
+        self.login_url = reverse('login')
+        self.user_data = {
+            'username': 'Test User',
+            'email': 'testuser@example.com',
+            'password': 'password123'
+        }
 
-    steps:
-    - name: Checkout code
-      uses: actions/checkout@v3
+    def test_signup(self):
+        # Test signup functionality
+        response = self.client.post(self.signup_url, self.user_data)
+        self.assertEqual(response.status_code, 302)  # Redirect to login
+        self.assertIn(self.user_data['email'], users_data)
+        self.assertEqual(users_data[self.user_data['email']]['username'], self.user_data['username'])
 
-    - name: Set up Python
-      uses: actions/setup-python@v4
-      with:
-        python-version: '3.9'
+    def test_login(self):
+        # Sign up the user first
+        self.client.post(self.signup_url, self.user_data)
+        
+        # Test login functionality
+        response = self.client.post(self.login_url, {
+            'email': self.user_data['email'],
+            'password': self.user_data['password']
+        })
+        self.assertEqual(response.status_code, 302)  # Redirect to home
+        self.assertEqual(response.url, reverse('home'))
 
-    - name: Install dependencies
-      run: |
-        python -m pip install --upgrade pip
-        pip install django pytest pytest-django
-
-    - name: Run Django migrations
-      run: |
-        python manage.py migrate
-
-    - name: Run tests
-      run: |
-        python manage.py test
+    def test_invalid_login(self):
+        # Test login with invalid credentials
+        response = self.client.post(self.login_url, {
+            'email': 'wrong@example.com',
+            'password': 'wrongpassword'
+        })
+        self.assertEqual(response.status_code, 200)  # Stays on login page
+        self.assertContains(response, "Invalid email or password. Please try again.")
