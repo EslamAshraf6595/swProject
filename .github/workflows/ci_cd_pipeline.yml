@@ -27,9 +27,11 @@ jobs:
         pip install django pytest pytest-django
 
     - name: Run Django migrations
+      working-directory: SoftwareProject
       run: |
         python manage.py migrate
 
     - name: Run tests
+      working-directory: SoftwareProject
       run: |
         python manage.py test
