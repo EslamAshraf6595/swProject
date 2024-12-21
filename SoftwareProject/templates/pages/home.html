@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  {% load static %}
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Discover our premium coffee products and beverages. Start your day with a perfect cup from our collection of hot and cool drinks!">
+  <title>Responsive Coffee Website</title>
+  <link rel="stylesheet" href="{% static 'css/style.css' %}">
+  <link rel="stylesheet" href="https://unpkg.com/boxicons@latest/css/boxicons.min.css">
+</head>
+<body>
+  <header>
+    <a href="#home" class="logo">
+      <img src="{% static 'img/logo.png' %}" alt="Coffee Website Logo">
+    </a>
+    <i class='bx bx-menu' id="menu-icon"></i>
+
+    <ul class="navbar">
+      <li><a href="#home">Home</a></li>
+      <li><a href="#about">About Us</a></li>
+      <li><a href="#products">Products</a></li>
+    </ul>
+
+    <div class="header-icon">
+      
+      <a href="{% url 'cart' %}" class="cart-link">
+        <i class='bx bx-cart-alt'></i>
+        <span id="cart-count">0</span>
+    </a>
+      
+      <i class='bx bx-search' id="search-icon"></i>
+    </div>
+    <div class="search-box">
+      <input type="search" id="search-input" placeholder="Search for a product..." aria-label="Search">
+      <button id="search-btn">Search</button>
+      <div id="search-message" class="hidden"></div>
+    </div>
+  </header>
+
+  <!-- Home Section -->
+  <section class="home" id="home">
+    <div class="home-text">
+      <h1>Start your day <br> with coffee</h1>
+      <p>Discover our premium collection of coffee and beverages to kickstart your day with energy and flavor.</p>
+      <a href="#products" class="btn">Shop Now</a>
+    </div>
+    <div class="home-img">
+      <img src="{% static 'img/main.png' %}" alt="Main Coffee Image">
+    </div>
+  </section>
+
+  <!-- About Us Section -->
+  <section class="about" id="about">
+    <div class="about-img">
+      <img src="{% static 'img/about.jpg' %}" alt="About Us">
+    </div>
+    <div class="about-text">
+      <h2>Our Team</h2>
+      <p>Eslam Ashraf - Project Manager</p>
+      <p>Abdelrahman Shalaby - Frontend Developer</p>
+      <p>Mahmoud Osama - Frontend Developer</p>
+      <p>Amr Khaled - Frontend Developer</p>
+      <p>Rahma - Backend Developer</p>
+      <a href="#home" class="btn">Learn More</a>
+    </div>
+  </section>
+
+  <!-- Products Section -->
+  <section class="products" id="products">
+    <div class="heading">
+      <h2>Our Popular Products</h2>
+    </div>
+    <div class="products-container">
+      <div class="box">
+        <img src="{% static 'img/p1.png' %}" alt="ARABICA Coffee">
+        <h3>ARABICA Coffee</h3>
+        <div class="content">
+          <span>$220</span>
+          <button class="add-to-cart" data-name="ARABICA Coffee">Add to Cart</button>
+        </div>
+      </div>
+      <div class="box">
+        <img src="{% static 'img/p2.png' %}" alt="BOTERO Coffee">
+        <h3>BOTERO Coffee</h3>
+        <div class="content">
+          <span>$250</span>
+          <button class="add-to-cart" data-name="BOTERO Coffee">Add to Cart</button>
+        </div>
+      </div>
+      <div class="box">
+        <img src="{% static 'img/p3.png' %}" alt="Patch Coffee">
+        <h3>Patch Coffee</h3>
+        <div class="content">
+          <span>$270</span>
+          <button class="add-to-cart" data-name="Patch Coffee">Add to Cart</button>
+        </div>
+      </div>
+      <div class="box">
+        <img src="{% static 'img/p4.png' %}" alt="Americano Coffee">
+        <h3>Americano Coffee</h3>
+        <div class="content">
+          <span>$750</span>
+          <button class="add-to-cart" data-name="Americano Coffee">Add to Cart</button>
+        </div>
+      </div>
+      <div class="box">
+        <img src="{% static 'img/p5.png' %}" alt="Sacred Coffee">
+        <h3>Sacred Coffee</h3>
+        <div class="content">
+          <span>$150</span>
+          <button class="add-to-cart" data-name="Sacred Coffee">Add to Cart</button>
+        </div>
+      </div>
+      <div class="box">
+        <img src="{% static 'img/p6.png' %}" alt="PRESTO Coffee">
+        <h3>PRESTO Coffee</h3>
+        <div class="content">
+          <span>$125</span>
+          <button class="add-to-cart" data-name="PRESTO Coffee">Add to Cart</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Hot Drinks Section -->
+  <section class="products" id="hot-drinks">
+    <div class="heading">
+      <h2>Hot Drinks</h2>
+    </div>
+    <div class="products-container">
+      <div class="box">
+        <img src="{% static 'img/c1.png' %}" alt="Cappuccino">
+        <h3>Cappuccino</h3>
+        <div class="content">
+          <span>$35</span>
+          <button class="add-to-cart" data-name="Cappuccino">Add to Cart</button>
+        </div>
+      </div>
+      <div class="box">
+        <img src="{% static 'img/c2.png' %}" alt="Single Espresso">
+        <h3>Single Espresso</h3>
+        <div class="content">
+          <span>$20</span>
+          <button class="add-to-cart" data-name="Single Espresso">Add to Cart</button>
+        </div>
+      </div>
+      <div class="box">
+        <img src="{% static 'img/c3.png' %}" alt="French Coffee">
+        <h3>French Coffee</h3>
+        <div class="content">
+          <span>$30</span>
+          <button class="add-to-cart" data-name="French Coffee">Add to Cart</button>
+        </div>
+      </div>
+      <div class="box">
+        <img src="{% static 'img/c4.png' %}" alt="American Coffee">
+        <h3>American Coffee</h3>
+        <div class="content">
+          <span>$22</span>
+          <button class="add-to-cart" data-name="American Coffee">Add to Cart</button>
+        </div>
+      </div>
+      <div class="box">
+        <img src="{% static 'img/t1.png' %}" alt="Red Tea">
+        <h3>Red Tea</h3>
+        <div class="content">
+          <span>$10</span>
+          <button class="add-to-cart" data-name="Red Tea">Add to Cart</button>
+        </div>
+      </div>
+      <div class="box">
+        <img src="{% static 'img/t2.png' %}" alt="Green Tea">
+        <h3>Green Tea</h3>
+        <div class="content">
+          <span>$12</span>
+          <button class="add-to-cart" data-name="Green Tea">Add to Cart</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Cool Drinks Section -->
+  <section class="products" id="cool-drinks">
+    <div class="heading">
+      <h2>Cool Drinks</h2>
+    </div>
+    <div class="products-container">
+      <div class="box">
+        <img src="{% static 'img/c5.png' %}" alt="Caramel Frappe">
+        <h3>Caramel Frappe</h3>
+        <div class="content">
+          <span>$55</span>
+          <button class="add-to-cart" data-name="Caramel Frappe">Add to Cart</button>
+        </div>
+      </div>
+      <div class="box">
+        <img src="{% static 'img/c6.png' %}" alt="Red Velvet Frappe">
+        <h3>Red Velvet Frappe</h3>
+        <div class="content">
+          <span>$65</span>
+          <button class="add-to-cart" data-name="Red Velvet Frappe">Add to Cart</button>
+        </div>
+      </div>
+      <div class="box">
+        <img src="{% static 'img/c7.png' %}" alt="Latte Frappe">
+        <h3>Latte Frappe</h3>
+        <div class="content">
+          <span>$85</span>
+          <button class="add-to-cart" data-name="Latte Frappe">Add to Cart</button>
+        </div>
+      </div>
+      <div class="box">
+        <img src="{% static 'img/c8.png' %}" alt="Lotus Frappe">
+        <h3>Lotus Frappe</h3>
+        <div class="content">
+          <span>$70</span>
+          <button class="add-to-cart" data-name="Lotus Frappe">Add to Cart</button>
+        </div>
+      </div>
+      <div class="box">
+        <img src="{% static 'img/c9.png' %}" alt="Caramel Latte">
+        <h3>Caramel Latte</h3>
+        <div class="content">
+          <span>$99</span>
+          <button class="add-to-cart" data-name="Caramel Latte">Add to Cart</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <script src="{% static 'js/main.js' %}"></script>
+</body>
+</html>
