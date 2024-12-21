@@ -1,0 +1,47 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Products</title>
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+    <script src="{% static 'js/main.js' %}" defer></script>
+</head>
+
+<<body>
+    <header>
+        <h1>Our Products</h1>
+    </header>
+    
+    <!-- Add your test string here -->
+    <h2 style="color:red;">DEBUG: This is my test string!</h2>
+    
+    <section class="product-list">
+        {% if products %}
+        <div class="products-container">
+            {% for product in products %}
+            <div class="box">
+                <img src="{{ product.image.url|default_if_none:'/static/img/default.png' }}" alt="{{ product.name }}">
+                <h3>{{ product.name }}</h3>
+                <div class="content">
+                    <span>${{ product.price }}</span>
+                    <button class="add-to-cart" 
+                            data-name="{{ product.name }}"
+                            data-price="{{ product.price }}"
+                            data-image="{{ product.image.url|default_if_none:'/static/img/default.png' }}">
+                        Add to Cart
+                    </button>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <p>No products available at the moment.</p>
+        {% endif %}
+    </section>
+    <footer>
+        <p>&copy; 2024 Coffee Shop</p>
+    </footer>
+</body>
+</html>

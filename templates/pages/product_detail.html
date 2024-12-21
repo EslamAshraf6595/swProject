@@ -1,0 +1,55 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ product.name if product else 'Product List' }}</title>
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+</head>
+<body>
+    <header>
+        <a href="/" class="logo">Coffee Shop</a>
+    </header>
+
+    {% if product %}
+    <!-- Single Product Detail Page -->
+    <section class="product-detail">
+        <div class="product-image">
+            {% if product.image %}
+                <img src="{{ product.image.url|default_if_none:'/static/img/default.png' }}" alt="{{ product.name }}">
+            {% else %}
+                <p>No image available</p>
+            {% endif %}
+        </div>
+        <div class="product-info">
+            <h1>{{ product.name }}</h1>
+            <p><strong>Price:</strong> ${{ product.price }}</p>
+            <p>{{ product.description }}</p>
+            <p><strong>Created at:</strong> {{ product.created_at }}</p>
+            <button class="add-to-cart" 
+                data-id="{{ product.id }}" 
+                data-name="{{ product.name }}" 
+                data-price="{{ product.price }}" 
+                data-image="{{ product.image.url|default_if_none:'/static/img/default.png' }}">
+                Add to Cart
+            </button>
+        </div>
+    </section>
+    {% else %}
+    <!-- Product List Page -->
+    <div class="product-list">
+        <h1>Our Products</h1>
+        {% for product in products %}
+        <div class="product">
+            <h2>{{ product.name }}</h2>
+            <p>{{ product.description }}</p>
+            <p><strong>Price:</strong> ${{ product.price }}</p>
+            <p><strong>Created at:</strong> {{ product.created_at }}</p>
+            <a href="{% url 'product_detail' product.id %}">View Details</a>
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+</body>
+</html>
