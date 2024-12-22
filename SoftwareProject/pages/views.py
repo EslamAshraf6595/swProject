@@ -3,11 +3,14 @@ from django.contrib import messages
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 from .models import Product
+import json
 
 # Temporary storage for user data (Replace with a database in production)
 users_data = {}
 
-# User Authentication Views
+# -----------------------
+# User Authentication
+# -----------------------
 def signup(request):
     if request.method == 'POST':
         username = request.POST.get('username')
@@ -33,60 +36,67 @@ def login(request):
         # Check if user exists and password matches
         user = users_data.get(email)
         if user and user['password'] == password:
-            return redirect('home')
+            return redirect('home')  # Redirect to home page
         else:
             messages.error(request, "Invalid email or password. Please try again.")
 
     return render(request, 'pages/login.html')
 
 
-# Core Views
+# -----------------------
+# Single-Page Core View
+# -----------------------
 def home(request):
-    return render(request, 'pages/home.html')
+    """
+    Renders a single template (e.g. pages/home.html) that contains
+    all sections: hero/banner, about, products, etc.
+    """
+    # Fetch products so we can display them on this single page
+    all_products = Product.objects.all()
+
+    return render(request, 'pages/home.html', {
+        'products': all_products
+    })
 
 
-def about(request):
-    return render(request, 'pages/about.html')
-
-
-def products(request):
-    products = Product.objects.all()
-    return render(request, 'pages/products.html', {'products': products})
-
-
-def product_detail(request, product_id):
-    product = get_object_or_404(Product, pk=product_id)
-    return render(request, 'pages/product_detail.html', {'product': product})
-
-
-# Cart Management
+# -----------------------
+# Cart Management (Ajax Endpoints)
+# -----------------------
 @csrf_exempt
 def add_to_cart(request):
     if request.method == 'POST':
         try:
-            product_id = request.POST.get('product_id')
-            product_name = request.POST.get('product_name')
-            product_price = request.POST.get('product_price')
-            product_image = request.POST.get('product_image')
+            # Parse JSON data from the request body
+            data = json.loads(request.body)
+            product_name = data.get('product_name')
+            product_price = data.get('product_price')
+            product_image = data.get('product_image')
 
-            if not product_id or not product_name or not product_price:
+            # Validate product details
+            if not product_name or not product_price:
                 return JsonResponse({'error': 'Missing product details'}, status=400)
 
+            # Fetch the cart from session
             cart = request.session.get('cart', {})
 
-            if product_id in cart:
-                cart[product_id]['quantity'] += 1
+            # Add or update the cart item
+            if product_name in cart:
+                cart[product_name]['quantity'] += 1
             else:
-                cart[product_id] = {
-                    'name': product_name,
+                cart[product_name] = {
                     'price': float(product_price),
                     'image': product_image,
                     'quantity': 1
                 }
 
+            # Save the cart back into the session
             request.session['cart'] = cart
 
-            return JsonResponse({'success': True, 'cart_count': len(cart), 'message': 'Product added to cart!'})
+            return JsonResponse({
+                'success': True,
+                'cart_count': sum(item['quantity'] for item in cart.values()),
+                'message': 'Product added to cart!'
+            })
 
         except Exception as e:
             return JsonResponse({'error': str(e)}, status=500)
@@ -97,28 +107,52 @@ def add_to_cart(request):
 @csrf_exempt
 def remove_from_cart(request):
     if request.method == 'POST':
-        product_id = request.POST.get('product_id')
+        try:
+            # Parse JSON data from the request body
+            data = json.loads(request.body)
+            product_id = data.get('product_id')
 
-        cart = request.session.get('cart', {})
+            # Fetch the cart from session
+            cart = request.session.get('cart', {})
 
-        if product_id in cart:
-            del cart[product_id]
-            request.session['cart'] = cart
+            if product_id in cart:
+                cart[product_id]['quantity'] -= 1
+                if cart[product_id]['quantity'] <= 0:
+                    del cart[product_id]
 
-        return JsonResponse({
-            'success': True,
-            'cart_count': sum(item['quantity'] for item in cart.values()),
-            'cart': cart
-        })
+                # Save the updated cart back to the session
+                request.session['cart'] = cart
 
-    return JsonResponse({'success': False, 'message': 'Invalid request'}, status=400)
+                return JsonResponse({
+                    'success': True,
+                    'cart_count': sum(item['quantity'] for item in cart.values()),
+                    'cart': cart,
+                    'message': f'{product_id} quantity updated or removed.'
+                })
+
+            return JsonResponse({'error': 'Product not found in cart'}, status=404)
+
+        except Exception as e:
+            return JsonResponse({'error': str(e)}, status=500)
+
+    return JsonResponse({'error': 'Invalid request method'}, status=400)
 
 
 def cart_view(request):
+    """
+    Renders the cart page and calculates the total price of items in the cart.
+    """
     cart = request.session.get('cart', {})
-    return render(request, 'pages/cart.html', {'cart': cart})
+    total = sum(item['price'] * item['quantity'] for item in cart.values())
+
+    return render(request, 'pages/cart.html', {
+        'cart': cart,
+        'total': total
+    })
 
 
-def product_list(request):
-    products = Product.objects.all()
-    return render(request, 'pages/product_list.html', {'products': products})
+def about(request):
+    """
+    Renders the about page.
+    """
+    return render(request, 'pages/about.html')

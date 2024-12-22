@@ -1,161 +1,157 @@
-// --- Header Shadow on Scroll ---
-
-// Function to toggle shadow on header when scrolling
+// Add shadow to header on scroll
 window.onscroll = () => {
     const header = document.querySelector("header");
     if (header) {
-        header.classList.toggle("shadow", window.scrollY > 0); // Add shadow class if scroll position is greater than 0
+        header.classList.toggle("shadow", window.scrollY > 0);
     }
 };
 
-// --- CSRF Token Fetch ---
+// Toggle search box visibility
+document.querySelector("#search-icon")?.addEventListener("click", () => {
+    document.querySelector(".search-box")?.classList.toggle("active");
+});
 
-// Function to get the CSRF token from the document
+// Toggle navbar menu visibility
+document.querySelector("#menu-icon")?.addEventListener("click", () => {
+    document.querySelector(".navbar")?.classList.toggle("active");
+});
+
+// Helper function to get CSRF token from cookies
 function getCSRFToken() {
-    const token = document.querySelector('[name=csrfmiddlewaretoken]');
-    return token ? token.value : ''; // Return CSRF token value or an empty string if not found
-}
-
-// --- Utility: Send Fetch Request ---
-
-// Generic function to send a fetch request
-async function sendFetchRequest(url, method, body) {
-    try {
-        const response = await fetch(url, {
-            method: method,
-            headers: {
-                'Content-Type': 'application/json',
-                'X-CSRFToken': getCSRFToken(), // Include CSRF token in the request
-            },
-            body: JSON.stringify(body), // Convert body to JSON format
-        });
-        return await response.json(); // Return the response in JSON format
-    } catch (error) {
-        console.error('Fetch Error:', error);
-        alert('An error occurred. Please try again.'); // Display an error message if the fetch fails
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        const cookies = document.cookie.split(';');
+        for (let i = 0; i < cookies.length; i++) {
+            const cookie = cookies[i].trim();
+            if (cookie.startsWith('csrftoken=')) {
+                cookieValue = decodeURIComponent(cookie.substring('csrftoken='.length));
+                break;
+            }
+        }
     }
+    return cookieValue;
 }
-
-// --- Add to Cart Functionality ---
 
 // Function to handle adding items to the cart
-function addToCart(productId) {
-    sendFetchRequest('/add_to_cart/', 'POST', { product_id: productId })
-        .then(data => {
-            if (data?.error) {
-                alert(data.error); // Display error if there's any
-            } else {
-                alert(data.message || 'Product added to cart!'); // Display success message
-                updateCartUIFromData(data.cart); // Updates cart UI with new data
-            }
-        });
-}
+document.querySelectorAll('.add-to-cart').forEach(button => {
+    button.addEventListener('click', function () {
+        const productName = this.dataset.name;
+        const productPrice = this.dataset.price;
+        const productImage = this.dataset.image;
 
-// --- Update Cart UI ---
+        if (!productName || !productPrice || !productImage) {
+            alert("Missing product details.");
+            return;
+        }
 
-// Function to update the cart UI based on the cart data
+        const payload = {
+            product_name: productName,
+            product_price: productPrice,
+            product_image: productImage
+        };
+
+        // Send the fetch request to add the product to the cart
+        fetch('/add_to_cart/', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': getCSRFToken()
+            },
+            body: JSON.stringify(payload)
+        })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error("Network response was not ok");
+                }
+                return response.json();
+            })
+            .then(data => {
+                if (data.success) {
+                    alert(data.message || "Product added to cart!");
+                    document.getElementById('cart-count').innerText = data.cart_count || 0;
+                } else {
+                    alert(data.error || "Failed to add product to cart.");
+                }
+            })
+            .catch(error => {
+                console.error("Error adding product to cart:", error);
+                alert("An error occurred while adding the product.");
+            });
+    });
+});
+
+// Function to update the cart UI
 function updateCartUIFromData(cart) {
-    const cartCount = document.getElementById("cart-count");
     const cartItemsContainer = document.getElementById("cart-items");
     const cartTotal = document.getElementById("cart-total");
+    const cartCount = document.getElementById("cart-count");
 
-    if (!cart || !cartItemsContainer || !cartTotal) return;
+    if (!cartItemsContainer || !cartTotal || !cartCount) return;
 
-    cartItemsContainer.innerHTML = ""; // Clear existing cart items
+    cartItemsContainer.innerHTML = ""; // Clear existing items
     let totalPrice = 0;
 
+    // Populate the cart with updated items
     for (const [productId, item] of Object.entries(cart)) {
         totalPrice += item.price * item.quantity;
 
-        const li = document.createElement("li");
-        li.innerHTML = `
-            ${item.name} x ${item.quantity} - $${(item.price * item.quantity).toFixed(2)}
-            <button class="remove-btn" data-id="${productId}">Remove</button>
+        const itemRow = document.createElement("tr");
+        itemRow.innerHTML = `
+            <td><img src="${item.image}" alt="${item.name}" class="cart-image"></td>
+            <td>${item.name}</td>
+            <td>$${item.price.toFixed(2)}</td>
+            <td>${item.quantity}</td>
+            <td>$${(item.price * item.quantity).toFixed(2)}</td>
+            <td><button class="remove-btn" data-id="${productId}">Remove</button></td>
         `;
-        cartItemsContainer.appendChild(li);
+        cartItemsContainer.appendChild(itemRow);
     }
 
-    cartTotal.textContent = `$${totalPrice.toFixed(2)}`; // Display the total price
-    cartCount.textContent = Object.values(cart).reduce((sum, item) => sum + item.quantity, 0); // Update the item count
+    cartTotal.textContent = `$${totalPrice.toFixed(2)}`;
+    cartCount.textContent = Object.values(cart).reduce((sum, item) => sum + item.quantity, 0);
 
-    setupRemoveButtons(); // Set up the event listeners for removing items
+    setupRemoveButtons(); // Reattach remove button event listeners
 }
 
-// --- Remove Items from Cart ---
-
-// Function to set up the remove buttons and their event listeners
+// Function to handle removing items from the cart
 function setupRemoveButtons() {
     document.querySelectorAll(".remove-btn").forEach(button => {
-        button.addEventListener("click", () => {
-            const productId = button.dataset.id;
+        button.addEventListener("click", function () {
+            const productId = this.dataset.id;
 
-            sendFetchRequest('/remove_from_cart/', 'POST', { product_id: productId })
-                .then(data => {
-                    if (data?.error) {
-                        alert(data.error); // Display error if there's any
-                    } else {
-                        alert('Item removed from cart.'); // Display success message
-                        updateCartUIFromData(data.cart); // Update the cart UI
+            // Send a POST request to decrease quantity
+            fetch('/remove_from_cart/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': getCSRFToken(),
+                },
+                body: JSON.stringify({ product_id: productId }),
+            })
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error("Network response was not ok");
                     }
+                    return response.json();
+                })
+                .then(data => {
+                    if (data.success) {
+                        alert(data.message || "Item updated in cart.");
+                        updateCartUIFromData(data.cart); // Dynamically update the cart UI
+                    } else {
+                        alert(data.error || "Failed to update cart.");
+                    }
+                })
+                .catch(error => {
+                    console.error("Error removing item:", error);
+                    alert("An error occurred while removing the item.");
                 });
         });
     });
 }
 
-// --- Event Listeners for Add to Cart Buttons ---
-
-// Function to handle click events for all 'Add to Cart' buttons
-document.querySelectorAll('.add-to-cart').forEach(button => {
-    button.addEventListener('click', () => {
-        const productId = button.dataset.id; // Get the product ID from the button's data-id attribute
-        addToCart(productId); // Call the addToCart function
-    });
-});
-
-// --- Main Logic for Cart Count Update ---
-
-// Function to handle cart count update from fetch response
-document.addEventListener('DOMContentLoaded', function () {
-    const addToCartButtons = document.querySelectorAll('.add-to-cart');
-
-    addToCartButtons.forEach(button => {
-        button.addEventListener('click', function () {
-            const productId = this.getAttribute('data-id');
-            
-            fetch('/add_to_cart/', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRFToken': getCookie('csrftoken') // Include CSRF token
-                },
-                body: JSON.stringify({ product_id: productId })
-            })
-            .then(response => response.json())
-            .then(data => {
-                alert(data.message); // Show a confirmation message
-                updateCartCount(data.cart_count); // Update the cart count in the header
-            });
-        });
-    });
-
-    // Utility function to get the CSRF token from cookies
-    function getCookie(name) {
-        let cookieValue = null;
-        if (document.cookie && document.cookie !== '') {
-            const cookies = document.cookie.split(';');
-            for (let i = 0; i < cookies.length; i++) {
-                const cookie = cookies[i].trim();
-                if (cookie.substring(0, name.length + 1) === (name + '=')) {
-                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
-                    break;
-                }
-            }
-        }
-        return cookieValue;
-    }
-
-    // Function to update the cart count in the header
-    function updateCartCount(cartCount) {
-        document.getElementById('cart-count').textContent = cartCount;
-    }
+// Ensure cart buttons are initialized when the page loads
+document.addEventListener('DOMContentLoaded', () => {
+    console.log("Page Loaded. Buttons are ready.");
+    setupRemoveButtons(); // Initialize remove buttons on page load
 });
